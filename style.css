@@ -1194,3 +1194,64 @@ a {
 .special-button:hover {
   background-color: #ff8c5a;
 }
+
+.checkout-form {
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.checkout-form label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.checkout-form input {
+  width: calc(100% - 22px);
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.checkout-form input[type="submit"] {
+  width: 100%;
+  background-color: #fd7140;
+  border: none;
+  color: #fff;
+  padding: 10px;
+  font-size: 18px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.checkout-form input[type="submit"]:hover {
+  background-color: #ff8c5a;
+}
+
+.confirmation-message {
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.confirmation-message h2 {
+  margin-bottom: 10px;
+}
+
+.confirmation-message p {
+  margin-bottom: 10px;
+}
+
+.confirmation-message strong {
+  color: #007bff;
+}
+
+.payment-confirmation-box {
+  margin-top: 27rem;
+}

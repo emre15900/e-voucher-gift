@@ -160,82 +160,25 @@
       </div>
     </header>
     <!-- Header /- -->
-    <!-- PageBanner -->
-    <div class="container-fluid pagebanner register no-padding">
-      <div class="container">
-        <div class="banner-content-block">
-          <div class="banner-content">
-            <h3>Checkout</h3>
-            <ol class="breadcrumb">
-              <li><a href="index.html" title="Home">Home</a></li>
-              <li class="active">Checkout</li>
-            </ol>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- PageBanner /- -->
-    <!-- Browse Category -->
-    <div class="container-fluid no-padding browsecategory">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-9 col-sm-8 col-xs-12">
-            <div class="input-group">
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Search for Deals"
-              />
-              <span class="input-group-btn">
-                <button class="btn" title="Search" type="button">Search</button>
-              </span>
-            </div>
-          </div>
-          <div class="col-md-3 col-sm-4 col-xs-12">
-            <a href="coupon-categories.html" title="Browse Categories"
-              ><i class="fa fa-bars" aria-hidden="true"></i> Browse
-              Categories</a
-            >
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Browse Category /- -->
 
     <!-- Featured SignUp -->
     <div class="container featuredsignup">
       <div class="row">
         <div class="col-md-12">
-          <div class="container">
-            <h1 class="cart-main-title">Checkout</h1>
-            <form
-              action="payment-confirmation.html"
-              method="post"
-              class="checkout-form"
-            >
-              <label for="name">Fullname:</label>
-              <input type="text" id="name" name="name" required />
-
-              <label for="email">Email:</label>
-              <input type="email" id="email" name="email" required />
-
-              <label for="card-number">Card Number:</label>
-              <input type="text" id="card-number" name="card-number" required />
-
-              <label for="expiry-date">Expiry Date:</label>
-              <input
-                type="text"
-                id="expiry-date"
-                name="expiry-date"
-                placeholder="MM/YYYY"
-                required
-              />
-
-              <label for="cvv">CVV:</label>
-              <input type="text" id="cvv" name="cvv" required />
-
-              <input type="submit" value="Pay Now" />
-            </form>
+          <div class="payment-confirmation-box">
+            <h1 class="cart-main-title">Payment Confirmation</h1>
+            <div class="confirmation-message">
+              <h2>Thank You!</h2>
+              <br />
+              <h3>Your payment has been successfully processed.</h3>
+              <br />
+              <h4>
+                <strong style="color: #fd7140">Order Number:</strong> 123456789
+              </h4>
+              <h4
+                ><strong style="color: #fd7140">Amount Paid:</strong> $100</h4
+              >
+            </div>
           </div>
         </div>
       </div>
