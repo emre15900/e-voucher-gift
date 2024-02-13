@@ -1159,7 +1159,7 @@ a {
 }
 
 .cart-item img {
-  max-width: 100px;
+  max-width: 300px;
   float: left;
   margin-right: 20px;
   border-radius: 20px;
@@ -1178,4 +1178,19 @@ a {
 
 .cart-total h3 {
   margin-top: 0;
+}
+
+.special-button {
+  background-color: #fd7140;
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 5px;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 20px;
+  border: 0;
+}
+
+.special-button:hover {
+  background-color: #ff8c5a;
 }
