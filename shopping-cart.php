@@ -23,9 +23,9 @@ if(isset($_GET['coupon_id'])) {
             if(isset($_GET['remove'])) {
               $item_index = $_GET['remove'];
               array_splice($cart_items, $item_index, 1);
+
               setcookie('cart_items', '', -1, '/');
               setcookie('cart_items', json_encode($cart_items), time() + 86400, '/');
-              header('Location: shopping-cart.php');
             }else {
               foreach($cart_items as $cart_item) {
                 $item_ids[] = $cart_item['id'];
@@ -44,10 +44,10 @@ if(isset($_GET['coupon_id'])) {
 }
 
 if(isset($_GET['clear'])) {
-    if (isset($_COOKIE['cart_items'])) {
-        unset($_COOKIE['cart_items']);
-        setcookie('cart_items', '', -1, '/');
-    }
+  if (isset($_COOKIE['cart_items'])) {
+    unset($_COOKIE['cart_items']);
+    setcookie('cart_items', '', -1, '/');
+  }
 }
 
 $total = [];

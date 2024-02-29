@@ -10,9 +10,9 @@ if(IS_LOCAL) {
   $user = 'root';
   $password = 'markomeje';
 }else {
-  $dbname = 'kellynel_rubio';
-  $user = 'kellynel_rubio_trfg7483gyfbhej';
-  $password = '5yfehifjb47f6qfaiacvk01923q';
+  $dbname = 'evoucher_db';
+  $user = 'evoucher_user';
+  $password = 'Mcdb99*38';
 }
 
 $host = IS_LOCAL ? '127.0.0.1' : 'localhost';
