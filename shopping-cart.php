@@ -1,3 +1,59 @@
+<?php
+
+header("Expires: Tue, 01 Jan 2000 00:00:00 GMT");
+header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
+include ('config/database.php');
+$cart_items = [];
+
+if(isset($_GET['coupon_id'])) {
+    $coupon_id = $_GET['coupon_id'];
+    $query = $dbh->prepare("SELECT * FROM coupons WHERE id = :id LIMIT 1");
+    $query->execute(['id' => $coupon_id]);
+    $coupon = $query->fetch(PDO::FETCH_ASSOC);
+
+    if(!empty($coupon)) {
+        if (isset($_COOKIE['cart_items'])) {
+            $cart_items = json_decode($_COOKIE['cart_items'], true);
+            $item_ids = [];
+
+            if(isset($_GET['remove'])) {
+              $item_index = $_GET['remove'];
+              array_splice($cart_items, $item_index, 1);
+              setcookie('cart_items', '', -1, '/');
+              setcookie('cart_items', json_encode($cart_items), time() + 86400, '/');
+              header('Location: shopping-cart.php');
+            }else {
+              foreach($cart_items as $cart_item) {
+                $item_ids[] = $cart_item['id'];
+              }
+
+              if(!in_array($coupon['id'], $item_ids)) {
+                array_push($cart_items, $coupon);
+                setcookie('cart_items', json_encode($cart_items), time() + 86400, '/');
+              }
+            }
+        }else {
+            $cart_items[] = $coupon;
+            setcookie('cart_items', json_encode($cart_items), time() + 86400, '/');
+        }
+    }
+}
+
+if(isset($_GET['clear'])) {
+    if (isset($_COOKIE['cart_items'])) {
+        unset($_COOKIE['cart_items']);
+        setcookie('cart_items', '', -1, '/');
+    }
+}
+
+$total = [];
+
+?>
+
 <!DOCTYPE html>
 <!--[if lt IE 7]> <html class="ie6"> <![endif]-->
 <!--[if IE 7]>    <html class="ie7"> <![endif]-->
@@ -69,96 +125,7 @@
     <!-- Loader /- -->
 
     <!-- Header -->
-    <header class="header-main container-fluid no-padding">
-      <div class="menu-block">
-        <div class="menu-left-bg"></div>
-        <div class="container">
-          <!-- Navigation -->
-          <nav class="navbar ow-navigation">
-            <div class="col-md-3 no-padding">
-              <div class="navbar-header">
-                <button
-                  aria-controls="navbar"
-                  aria-expanded="false"
-                  data-target="#navbar"
-                  data-toggle="collapse"
-                  class="navbar-toggle collapsed"
-                  type="button"
-                >
-                  <span class="sr-only">Toggle navigation</span>
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-                </button>
-                <a title="Logo" href="index.html" class="navbar-brand"
-                  ><img
-                    src="images/logo.png"
-                    alt="logo"
-                    width="43"
-                    height="51"
-                  /><span>E-Vouchergift</span></a
-                >
-                <a href="index.html" class="mobile-logo" title="Logo"
-                  ><h3>E-Vouchergift</h3></a
-                >
-              </div>
-            </div>
-            <div class="col-md-9 menuinner no-padding">
-              <div class="navbar-collapse collapse" id="navbar">
-                <ul class="nav navbar-nav menubar">
-                  <li><a title="Home" href="index.html">Home</a></li>
-                  <li>
-                    <a title="Deals" href="index.html#deal-section">Deals</a>
-                  </li>
-                  <li>
-                    <a title="Shops" href="index.html#shopingbrands">Shops</a>
-                  </li>
-                  <li>
-                    <a title="Categories" href="coupon-categories.html"
-                      >Coupon Categories</a
-                    >
-                  </li>
-                  <li>
-                    <a title="Coupons" href="coupons.html">Coupons</a>
-                  </li>
-                  <li class="dropdown">
-                    <a
-                      aria-expanded="false"
-                      aria-haspopup="true"
-                      role="button"
-                      class="dropdown-toggle"
-                      title="Latest News"
-                      href="blog.html"
-                      >Blogs</a
-                    >
-                    <i class="ddl-switch fa fa-angle-down"></i>
-                    <ul class="dropdown-menu">
-                      <li>
-                        <a title="Blog Single" href="blogpost.html"
-                          >Blog Single</a
-                        >
-                      </li>
-                    </ul>
-                  </li>
-                  <li>
-                    <a title="Contact Us" href="contact.html">Contact Us</a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </nav>
-          <!-- Navigation /- -->
-          <div class="user-cart">
-            <a href="./login.html" title="User"
-              ><i class="fa fa-user" aria-hidden="true"></i
-            ></a>
-            <a href="shopping-cart.html" title="Your Cart"
-              ><i class="fa fa-shopping-cart" aria-hidden="true"></i
-            ></a>
-          </div>
-        </div>
-      </div>
-    </header>
+    <?php include ('includes/header.php'); ?>
     <!-- Header /- -->
     <!-- PageBanner -->
     <div class="container-fluid pagebanner register no-padding">
@@ -167,7 +134,7 @@
           <div class="banner-content">
             <h3>Shopping Cart</h3>
             <ol class="breadcrumb">
-              <li><a href="index.html" title="Home">Home</a></li>
+              <li><a href="<?= BASE_URL; ?>" title="Home">Home</a></li>
               <li class="active">Shopping Cart</li>
             </ol>
           </div>
@@ -208,59 +175,35 @@
         <div class="col-md-12">
           <div class="container">
             <h1 class="cart-main-title">Shopping Cart</h1>
-
-            <div class="cart-item">
-              <img
-                src="https://www.voucherexpress.co.uk/volatile/productimagelarge/gc%20(1).png"
-                alt="Product 1"
-              />
-              <div class="cart-item-details">
-                <h3>
-                  Discover over 150 brands with the VEX Gift Card. Gift a Card,
-                  gift a choice.
-                </h3>
-                <p>Price: $10.00</p>
-                <p>Quantity: 1</p>
-                <button class="special-button">Remove Item</button>
+            <?php if(empty($cart_items)): ?>
+              <div class="alert alert-info">No cart items</div>
+            <?php else: ?>
+              <?php foreach($cart_items as $index => $item): ?>
+                <?php $total[] = $item['price']; ?>
+                <div class="cart-item">
+                  <img
+                    src="<?= $item['img']; ?>"
+                    alt="coupon 1"
+                  />
+                  <div class="cart-item-details">
+                    <h3>
+                      <?= $item['description']; ?>
+                    </h3>
+                    <p>Price: $<?= $item['price']; ?></p>
+                    <p>Quantity: 1</p>
+                    <a class="" href="<?= BASE_URL; ?>/shopping-cart.php?coupon_id=<?= $item['id']; ?>&remove=<?= $index; ?>">Remove Item</a>
+                  </div>
+                </div>
+              <?php endforeach; ?>
+              <div class="cart-total">
+                <h3>Total</h3>
+                <?php $total_sum = array_sum($total); ?>
+                <h2>$<?= $total_sum; ?></h2>
+                <a href="<?= BASE_URL; ?>/checkout.php?total=<?= $total_sum; ?>">
+                  <button class="special-button">Checkout</button>
+                </a>
               </div>
-            </div>
-
-            <div class="cart-item">
-              <img
-                src="https://www.voucherexpress.co.uk/volatile/productimagelarge/asda-gift-card-lrg%20prod%20img.jpg"
-                alt="Product 2"
-              />
-              <div class="cart-item-details">
-                <h3>
-                  ASDA is one of Britain's biggest supermarkets and part of the
-                  Wal-Mart family
-                </h3>
-                <p>Price: $15.00</p>
-                <p>Quantity: 2</p>
-                <button class="special-button">Remove Item</button>
-              </div>
-            </div>
-
-            <div class="cart-item">
-              <img
-                src="https://www.voucherexpress.co.uk/volatile/productimagelarge/asos-lrg-prod-img.png"
-                alt="Product 2"
-              />
-              <div class="cart-item-details">
-                <h3>ASOS is a global fashion destination for 20-somethings</h3>
-                <p>Price: $15.00</p>
-                <p>Quantity: 2</p>
-                <button class="special-button">Remove Item</button>
-              </div>
-            </div>
-
-            <div class="cart-total">
-              <h3>Total</h3>
-              <h2>$40.00</h2>
-              <a href="./checkout.html">
-                <button class="special-button">Checkout</button>
-              </a>
-            </div>
+            <?php endif; ?>
           </div>
         </div>
       </div>

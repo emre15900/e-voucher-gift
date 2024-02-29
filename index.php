@@ -1,3 +1,107 @@
+<?php
+
+include ('config/database.php');
+$coupons = [
+  [
+    'img' => 'https://www.voucherexpress.co.uk/volatile/productimagelarge/gc%20(1).png',
+    'description' => 'Discover over 150 brands with the VEX Gift Card. Gift a Card, gift a choice',
+    'expiry' => '27-12-2024',
+    'percentage_off' => '15%',
+    'name' => 'VEX Gift Card',
+    'code' => '12xjuox',
+  ],
+  [
+    'img' => 'https://www.voucherexpress.co.uk/volatile/productimagelarge/asda-gift-card-lrg%20prod%20img.jpg',
+    'description' => 'ASDA is one of Britain\'s biggest supermarkets and part of the Wal-Mart family',
+    'expiry' => '26-12-2024',
+    'percentage_off' => '10%',
+    'name' => 'Extra Upto 5% Cashback',
+    'code' => '12xjuox'
+  ],
+  [
+    'img' => 'https://www.voucherexpress.co.uk/volatile/productimagelarge/asos-lrg-prod-img.png',
+    'description' => 'ASOS is a global fashion destination for 20-somethings',
+    'expiry' => '04-09-2024',
+    'percentage_off' => '08%',
+    'name' => 'Extra Upto 2% Cashback',
+    'code' => '12xjuox'
+  ],
+  [
+    'img' => 'https://www.voucherexpress.co.uk/volatile/productimagelarge/sainsburys_fullrangepage_largeproductimage.png',
+    'description' => 'Flat $ 100 OFF on Minimum Shopping of $ 200 - Sitewide',
+    'expiry' => '27-04-2024',
+    'percentage_off' => '12%',
+    'name' => 'Extra Upto 3% Cashback',
+    'code' => '12xjuox'
+  ],
+  [
+    'img' => 'https://www.voucherexpress.co.uk/volatile/productimagelarge/time-inc-lrg-prod-img.png',
+    'description' => 'Happy Hours - Get Extra $ 500 OFF on Order of $ 2499 or Above',
+    'expiry' => '13-07-2024',
+    'percentage_off' => '8%',
+    'name' => 'Extra Upto 2% Cashback',
+    'code' => '12xjuox'
+  ],
+  [
+    'img' => 'https://www.voucherexpress.co.uk/volatile/productimagelarge/currys-large-product-image.png',
+    'description' => 'The UK\'s leading electronics and computer superstores.',
+    'expiry' => '26-07-2024',
+    'percentage_off' => '10%',
+    'name' => 'Extra Upto 2% Cashback',
+    'code' => '12xjuox'
+  ]
+];
+
+ob_start();
+include ('config/database.php');
+
+$query = $dbh->prepare("SHOW TABLES LIKE :coupons");
+$query->execute([':coupons' => 'coupons']);
+
+if (!($query->rowCount() > 0)) {
+    $sql = "CREATE TABLE `coupons` (
+        `id` int unsigned NOT NULL AUTO_INCREMENT,
+        `name` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+        `description` text CHARACTER SET utf8mb4 DEFAULT NULL,
+        `expiry` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL,
+        `price` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL,
+        `img` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL,
+        `code` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL,
+        `percentage_off` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+        PRIMARY KEY (`id`)
+    )";
+    $dbh->exec($sql);
+}
+
+foreach($coupons as $coupon) {
+  $img = $coupon['img'];
+  $query = $dbh->prepare("SELECT * FROM coupons WHERE img = :img LIMIT 1");
+  $query->execute(['img' => $img]);
+  $row = $query->fetch(PDO::FETCH_ASSOC);
+
+  if(!$row) {
+    $query = $dbh->prepare("INSERT INTO coupons (name, description, percentage_off, code, expiry, img, price) VALUES (:name, :description, :percentage_off, :code, :expiry, :img, :price)");
+
+    $query->execute([
+      'name' => $coupon['name'],
+      'description' => $coupon['description'],
+      'percentage_off' => $coupon['percentage_off'],
+      'img' => $img,
+      'expiry' => $coupon['expiry'],
+      'code' => $coupon['code'],
+      'price' => rand(10, 67),
+    ]);
+  }
+}
+
+$sql = "SELECT * FROM coupons";
+$query = $dbh->prepare($sql);
+$query->execute();
+
+$coupons = $query->fetchAll(PDO::FETCH_ASSOC);
+
+?>
+
 <!DOCTYPE html>
 <!--[if lt IE 7]> <html class="ie6"> <![endif]-->
 <!--[if IE 7]>    <html class="ie7"> <![endif]-->
@@ -68,100 +172,7 @@
     <!-- Loader /- -->
 
     <!-- Header -->
-    <header class="header-main container-fluid no-padding">
-      <div class="menu-block">
-        <div class="menu-left-bg"></div>
-        <div class="container">
-          <!-- Navigation -->
-          <nav class="navbar ow-navigation">
-            <div class="col-md-3 no-padding">
-              <div class="navbar-header">
-                <button
-                  aria-controls="navbar"
-                  aria-expanded="false"
-                  data-target="#navbar"
-                  data-toggle="collapse"
-                  class="navbar-toggle collapsed"
-                  type="button"
-                >
-                  <span class="sr-only">Toggle navigation</span>
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-                </button>
-                <a title="Logo" href="index.html" class="navbar-brand"
-                  ><img
-                    src="images/logo.png"
-                    alt="logo"
-                    width="43"
-                    height="51"
-                  /><span>E-Vouchergift</span></a
-                >
-                <a href="index.html" class="mobile-logo" title="Logo"
-                  ><h3>E-Vouchergift</h3></a
-                >
-              </div>
-            </div>
-            <div class="col-md-9 menuinner no-padding">
-              <div class="navbar-collapse collapse" id="navbar">
-                <ul class="nav navbar-nav menubar">
-                  <li class="active">
-                    <a title="Home" href="index.html">Home</a>
-                  </li>
-                  <li>
-                    <a title="Deals" href="index.html#deal-section">Deals</a>
-                  </li>
-                  <li>
-                    <a title="Shops" href="index.html#shopingbrands">Shops</a>
-                  </li>
-                  <li>
-                    <a title="Categories" href="coupon-categories.html"
-                      >Coupon Categories</a
-                    >
-                  </li>
-                  <li>
-                    <a title="Coupons" href="coupons.html"
-                      >Coupons</a
-                    >
-                  </li>
-                  <li class="dropdown">
-                    <a
-                      aria-expanded="false"
-                      aria-haspopup="true"
-                      role="button"
-                      class="dropdown-toggle"
-                      title="Latest News"
-                      href="blog.html"
-                      >Blogs</a
-                    >
-                    <i class="ddl-switch fa fa-angle-down"></i>
-                    <ul class="dropdown-menu">
-                      <li>
-                        <a title="Blog Single" href="blogpost.html"
-                          >Blog Single</a
-                        >
-                      </li>
-                    </ul>
-                  </li>
-                  <li>
-                    <a title="Contact Us" href="contact.html">Contact Us</a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </nav>
-          <!-- Navigation /- -->
-          <div class="user-cart">
-            <a href="./login.html" title="User"
-              ><i class="fa fa-user" aria-hidden="true"></i
-            ></a>
-            <a href="shopping-cart.html" title="Your Cart"
-              ><i class="fa fa-shopping-cart" aria-hidden="true"></i
-            ></a>
-          </div>
-        </div>
-      </div>
-    </header>
+    <?php include ('includes/header.php'); ?>
     <!-- Header /- -->
     <!-- Photobanner -->
     <div class="container-fluid no-padding photobanner">
@@ -218,166 +229,43 @@
           out!
         </p>
       </div>
-      <div class="row">
-        <div class="col-md-4 col-sm-6 col-xs-6">
-          <div class="dealbox">
-            <div class="deal-thmbimg">
-              <img
-                src="https://www.voucherexpress.co.uk/volatile/productimagelarge/gc%20(1).png"
-                width="370"
-                height="247"
-                alt="deal1"
-              />
-              <p>
-                <i class="fa fa-shopping-cart" aria-hidden="true"></i
-                ><span>15%</span>
-              </p>
+      <?php if(empty($coupons)): ?>
+        <div class="alert alert-info">No coupons found.</div>
+      <?php else: ?>
+        <div class="row">
+          <?php $i = 1; ?>
+          <?php foreach($coupons as $coupon): ?>
+            <?php $i++; ?>
+            <div class="col-md-4 col-sm-6 col-xs-6">
+              <div class="dealbox">
+                <div class="deal-thmbimg">
+                  <img
+                    src="<?= $coupon['img']; ?>"
+                    width="370"
+                    height="247"
+                    alt="deal<?= $i; ?>"
+                  />
+                  <p>
+                    <i class="fa fa-shopping-cart" aria-hidden="true"></i
+                    ><span><?= $coupon['percentage_off']; ?></span>
+                  </p>
+                </div>
+                <div class="deal-content">
+                  <h3><?= $coupon['name']; ?></h3>
+                  <p>
+                    <?= $coupon['description']; ?>
+                  </p>
+                  <a href="<?= BASE_URL; ?>/shopping-cart.php?coupon_id=<?= $coupon['id']; ?>" title="Buy" class="getdeal-btn">
+                    <span class="get-coupencode"><?= $coupon['code']; ?></span>
+                    <span class="getdeal">Buy</span>
+                  </a>
+                  <div class="expire"><span>Expire :</span> <?= $coupon['expiry']; ?></div>
+                </div>
+              </div>
             </div>
-            <div class="deal-content">
-              <h3>VEX Gift Card</h3>
-              <p>
-                Discover over 150 brands with the VEX Gift Card. Gift a Card,
-                gift a choice
-              </p>
-              <a href="shopping-cart.html" title="Buy" class="getdeal-btn">
-                <span class="get-coupencode">12xjuox</span>
-                <span class="getdeal">Buy</span>
-              </a>
-              <div class="expire"><span>Expire :</span> 27-12-2024</div>
-            </div>
-          </div>
+          <?php endforeach; ?>
         </div>
-        <div class="col-md-4 col-sm-6 col-xs-6">
-          <div class="dealbox">
-            <div class="deal-thmbimg">
-              <img
-                src="https://www.voucherexpress.co.uk/volatile/productimagelarge/asda-gift-card-lrg%20prod%20img.jpg"
-                width="370"
-                height="247"
-                alt="deal2"
-              />
-              <p>
-                <i class="fa fa-shopping-cart" aria-hidden="true"></i
-                ><span>10%</span>
-              </p>
-            </div>
-            <div class="deal-content">
-              <h3>Extra Upto 5% Cashback</h3>
-              <p>
-                ASDA is one of Britain's biggest supermarkets and part of the
-                Wal-Mart family
-              </p>
-              <a href="shopping-cart.html" title="Buy" class="getdeal-btn">
-                <span class="get-coupencode">12xjuox</span>
-                <span class="getdeal">Buy</span>
-              </a>
-              <div class="expire"><span>Expire :</span> 26-12-2024</div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4 col-sm-6 col-xs-6">
-          <div class="dealbox">
-            <div class="deal-thmbimg">
-              <img
-                src="https://www.voucherexpress.co.uk/volatile/productimagelarge/asos-lrg-prod-img.png"
-                width="370"
-                height="247"
-                alt="deal3"
-              />
-              <p>
-                <i class="fa fa-shopping-cart" aria-hidden="true"></i
-                ><span>12%</span>
-              </p>
-            </div>
-            <div class="deal-content">
-              <h3>Extra Upto 2% Cashback</h3>
-              <p>ASOS is a global fashion destination for 20-somethings</p>
-              <a href="shopping-cart.html" title="Buy" class="getdeal-btn">
-                <span class="get-coupencode">12xjuox</span>
-                <span class="getdeal">Buy</span>
-              </a>
-              <div class="expire"><span>Expire :</span> 03-09-2024</div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4 col-sm-6 col-xs-6">
-          <div class="dealbox">
-            <div class="deal-thmbimg">
-              <img
-                src="https://www.voucherexpress.co.uk/volatile/productimagelarge/sainsburys_fullrangepage_largeproductimage.png"
-                width="370"
-                height="247"
-                alt="deal4"
-              />
-              <p>
-                <i class="fa fa-shopping-cart" aria-hidden="true"></i
-                ><span>8%</span>
-              </p>
-            </div>
-            <div class="deal-content">
-              <h3>Extra Upto 3% Cashback</h3>
-              <p>Flat $ 100 OFF on Minimum Shopping of $ 200 – Sitewide</p>
-              <a href="shopping-cart.html" title="Buy" class="getdeal-btn">
-                <span class="get-coupencode">12xjuox</span>
-                <span class="getdeal">Buy</span>
-              </a>
-              <div class="expire"><span>Expire :</span> 03-09-2024</div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4 col-sm-6 col-xs-6">
-          <div class="dealbox">
-            <div class="deal-thmbimg">
-              <img
-                src="https://www.voucherexpress.co.uk/volatile/productimagelarge/time-inc-lrg-prod-img.png"
-                width="370"
-                height="247"
-                alt="deal5"
-              />
-              <p>
-                <i class="fa fa-shopping-cart" aria-hidden="true"></i
-                ><span>15%</span>
-              </p>
-            </div>
-            <div class="deal-content">
-              <h3>Extra Upto 2% Cashback</h3>
-              <p>
-                Happy Hours – Get Extra $ 500 OFF on Order of $ 2499 or Above
-              </p>
-              <a href="shopping-cart.html" title="Buy" class="getdeal-btn">
-                <span class="get-coupencode">12xjuox</span>
-                <span class="getdeal">Buy</span>
-              </a>
-              <div class="expire"><span>Expire :</span> 11-07-2024</div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4 col-sm-6 col-xs-6">
-          <div class="dealbox">
-            <div class="deal-thmbimg">
-              <img
-                src="https://www.voucherexpress.co.uk/volatile/productimagelarge/currys-large-product-image.png"
-                width="370"
-                height="247"
-                alt="deal6"
-              />
-              <p>
-                <i class="fa fa-shopping-cart" aria-hidden="true"></i
-                ><span>10%</span>
-              </p>
-            </div>
-            <div class="deal-content">
-              <h3>Extra Upto 2% Cashback</h3>
-              <p>The UK's leading electronics and computer superstores.</p>
-              <a href="shopping-cart.html" title="Buy" class="getdeal-btn">
-                <span class="get-coupencode">12xjuox</span>
-                <span class="getdeal">Buy</span>
-              </a>
-              <div class="expire"><span>Expire :</span> 26-07-2024</div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <?php endif; ?>
       <div class="section-padding"></div>
     </div>
     <!-- Deal Section /- -->

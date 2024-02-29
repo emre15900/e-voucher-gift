@@ -1,3 +1,59 @@
+<?php
+
+ob_start();
+include ('config/database.php');
+
+$query = $dbh->prepare("SHOW TABLES LIKE :users");
+$query->execute([':users' => 'users']);
+
+if (!$query->rowCount()) {
+  header('Location: signup.php');
+  exit;
+}
+
+$success_message = $error_message = $email = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $email = isset($_POST['email']) ? $_POST['email'] : null;
+  $password = isset($_POST['password']) ? $_POST['password'] : null;
+  $rememberme = isset($_POST['rememberme']) ? $_POST['rememberme'] : false;
+
+  if (empty($email)) {
+    $error_message = "Kindly enter your email.";
+  }elseif(empty($password)) {
+    $error_message = "Kindly enter your password.";
+  } else {
+    $query = $dbh->prepare("SELECT * FROM users WHERE email = :email LIMIT 1");
+    $query->execute(['email' => $email]);
+    $row = $query->fetch(PDO::FETCH_ASSOC);
+
+    if(!$row) {
+      $error_message = "Invalid login details";
+    }else {
+      if (!password_verify($password, $row['password'])) {
+        $error_message = "Invalid login details";
+      }else {
+
+        if ($rememberme) {
+          $expiry = time() + 60 * 60 * 24 * 30; // 30 days
+          setcookie('EVOUCHERGIFT_REMEMBERME_COOKIE', $email, $expiry);
+        }
+
+        $user = [
+          'login' => true,
+          'email' => $row['email']
+        ];
+
+        $_SESSION['user'] = $user;
+        $success_message = "Login successfull";
+        header('Location:'.BASE_URL.'/');
+        exit;
+      }
+    }
+  }
+}
+
+?>
+
 <!DOCTYPE html>
 <!--[if lt IE 7]> <html class="ie6"> <![endif]-->
 <!--[if IE 7]>    <html class="ie7"> <![endif]-->
@@ -11,7 +67,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="" />
     <meta name="author" content="" />
-    <title>Shopping Cart | ELECKTRONIC GIFT VOUCHERS LTD</title>
+    <title>Login | ELECKTRONIC GIFT VOUCHERS LTD</title>
     <!-- Standard Favicon -->
     <link rel="icon" type="image/x-icon" href="images//favicon.ico" />
     <!-- For iPhone 4 Retina display: -->
@@ -69,106 +125,17 @@
     <!-- Loader /- -->
 
     <!-- Header -->
-    <header class="header-main container-fluid no-padding">
-      <div class="menu-block">
-        <div class="menu-left-bg"></div>
-        <div class="container">
-          <!-- Navigation -->
-          <nav class="navbar ow-navigation">
-            <div class="col-md-3 no-padding">
-              <div class="navbar-header">
-                <button
-                  aria-controls="navbar"
-                  aria-expanded="false"
-                  data-target="#navbar"
-                  data-toggle="collapse"
-                  class="navbar-toggle collapsed"
-                  type="button"
-                >
-                  <span class="sr-only">Toggle navigation</span>
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-                </button>
-                <a title="Logo" href="index.html" class="navbar-brand"
-                  ><img
-                    src="images/logo.png"
-                    alt="logo"
-                    width="43"
-                    height="51"
-                  /><span>E-Vouchergift</span></a
-                >
-                <a href="index.html" class="mobile-logo" title="Logo"
-                  ><h3>E-Vouchergift</h3></a
-                >
-              </div>
-            </div>
-            <div class="col-md-9 menuinner no-padding">
-              <div class="navbar-collapse collapse" id="navbar">
-                <ul class="nav navbar-nav menubar">
-                  <li><a title="Home" href="index.html">Home</a></li>
-                  <li>
-                    <a title="Deals" href="index.html#deal-section">Deals</a>
-                  </li>
-                  <li>
-                    <a title="Shops" href="index.html#shopingbrands">Shops</a>
-                  </li>
-                  <li>
-                    <a title="Categories" href="coupon-categories.html"
-                      >Coupon Categories</a
-                    >
-                  </li>
-                  <li>
-                    <a title="Coupons" href="coupons.html">Coupons</a>
-                  </li>
-                  <li class="dropdown">
-                    <a
-                      aria-expanded="false"
-                      aria-haspopup="true"
-                      role="button"
-                      class="dropdown-toggle"
-                      title="Latest News"
-                      href="blog.html"
-                      >Blogs</a
-                    >
-                    <i class="ddl-switch fa fa-angle-down"></i>
-                    <ul class="dropdown-menu">
-                      <li>
-                        <a title="Blog Single" href="blogpost.html"
-                          >Blog Single</a
-                        >
-                      </li>
-                    </ul>
-                  </li>
-                  <li>
-                    <a title="Contact Us" href="contact.html">Contact Us</a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </nav>
-          <!-- Navigation /- -->
-          <div class="user-cart">
-            <a href="./login.html" title="User"
-              ><i class="fa fa-user" aria-hidden="true"></i
-            ></a>
-            <a href="shopping-cart.html" title="Your Cart"
-              ><i class="fa fa-shopping-cart" aria-hidden="true"></i
-            ></a>
-          </div>
-        </div>
-      </div>
-    </header>
+    <?php include ('includes/header.php'); ?>
     <!-- Header /- -->
     <!-- PageBanner -->
     <div class="container-fluid pagebanner register no-padding">
       <div class="container">
         <div class="banner-content-block">
           <div class="banner-content">
-            <h3>Checkout</h3>
+            <h3>Join with Us</h3>
             <ol class="breadcrumb">
-              <li><a href="index.html" title="Home">Home</a></li>
-              <li class="active">Checkout</li>
+              <li><a href="<?= BASE_URL; ?>/" title="Home">Home</a></li>
+              <li class="active">Login</li>
             </ol>
           </div>
         </div>
@@ -204,37 +171,101 @@
 
     <!-- Featured SignUp -->
     <div class="container featuredsignup">
+      <div class="section-padding"></div>
       <div class="row">
-        <div class="col-md-12">
-          <div class="container">
-            <h1 class="cart-main-title">Checkout</h1>
-            <form
-              action="payment-confirmation.html"
-              method="post"
-              class="checkout-form"
-            >
-              <label for="name">Fullname:</label>
-              <input type="text" id="name" name="name" required />
-
-              <label for="email">Email:</label>
-              <input type="email" id="email" name="email" required />
-
-              <label for="card-number">Card Number:</label>
-              <input type="text" id="card-number" name="card-number" required />
-
-              <label for="expiry-date">Expiry Date:</label>
-              <input
-                type="text"
-                id="expiry-date"
-                name="expiry-date"
-                placeholder="MM/YYYY"
-                required
-              />
-
-              <label for="cvv">CVV:</label>
-              <input type="text" id="cvv" name="cvv" required />
-
-              <input type="submit" value="Pay Now" />
+        <div class="col-md-7">
+          <div class="featured-section">
+            <div class="section-header">
+              <h3>Advantages of being our member</h3>
+              <p>Today's hot deals handpicked by our Team up!</p>
+            </div>
+            <div class="featuredbox">
+              <h3>More than 300+ trust worthy online stores</h3>
+              <p>
+                <span class="icon icon-ShoppingCart"></span>Just sit right back
+                and you will hear a tale a tale of a fateful trip that started
+                from this tropic port aboard this tiny ship in a freak mishap
+                ranger and its pilot captain william buck rogers are blown out
+                of their trajectory.
+              </p>
+            </div>
+            <div class="featuredbox">
+              <h3>24 / 7 Online support for all your queries</h3>
+              <p>
+                <span class="icon icon-Headset"></span>Well the first thing you
+                know old jeds a millionaire kinfolk said jed move away from
+                there come and dance on our floor take a step that is new we
+                have a loveable space that needs your face threes and company.
+              </p>
+            </div>
+            <div class="featuredbox">
+              <h3>100% Verified online product vendors</h3>
+              <p>
+                <span class="icon icon-ClosedLock"></span>Five passengers set
+                sail that day for a three hour tour a three hour tour believe it
+                or not I am walking on air I never thought I could feel so free
+                just two good old boys would not change if they could fighting
+                system.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-5">
+          <div class="featured-section">
+            <div class="section-header">
+              <h3>Login</h3>
+              <p>Today's hot deals handpicked by our Team up!</p>
+            </div>
+            <?php if(!empty($_GET['signup'])): ?>
+              <div class="alert-success" style="padding: 10px">
+                <div class='small'>Signup successful. Kindly login.</div>
+              </div>
+            <?php endif; ?>
+            <br>
+            <?php if(!empty($error_message)): ?>
+              <div class="alert alert-danger">
+                <?= $error_message; ?>
+              </div>
+            <?php endif; ?>
+            <form class="signupform" action="<?= htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
+              <div class="row">
+                <div class="col-md-12 col-sm-12 col-xs-6">
+                  <div class="form-group">
+                    <input
+                      type="email"
+                      class="form-control"
+                      id="input_email"
+                      placeholder="Email Address*"
+                      name="email"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-12 col-sm-12 col-xs-6">
+                  <div class="form-group">
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="input_pwd"
+                      placeholder="Password"
+                      name="password"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-12 col-sm-12 col-xs-6">
+                  <div style="display: flex; align-items: center; gap: 1rem">
+                    <p style="margin-bottom: 0">
+                      You don't have an account yet?
+                    </p>
+                    <a href="<?= BASE_URL; ?>/signup.php" title="Register" style="top: 0"
+                      >Register here</a
+                    >
+                  </div>
+                </div>
+                <div class="col-md-12 col-sm-12 col-xs-6">
+                  <br>
+                  <button class="btn-success p-4 mt-4" type="submit">Login</button>
+                </div>
+              </div>
             </form>
           </div>
         </div>

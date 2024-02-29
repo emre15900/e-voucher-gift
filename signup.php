@@ -1,3 +1,123 @@
+<?php
+
+ob_start();
+include ('config/database.php');
+
+$query = $dbh->prepare("SHOW TABLES LIKE :users");
+$query->execute([':users' => 'users']);
+
+if (!($query->rowCount() > 0)) {
+  $sql = "CREATE TABLE `users` (
+    `id` int unsigned NOT NULL AUTO_INCREMENT,
+    `fullname` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL,
+    `email` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+    `username` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL,
+    `password` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL,
+    `status` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL,
+    PRIMARY KEY (`id`)
+  )";
+  $dbh->exec($sql);
+}
+
+$username = $email = $fullname = '';
+$success_message = $error_message = '';
+
+// Function to sanitize user input
+function sanitize_input($data)
+{
+  $data = trim($data);
+  $data = stripslashes($data);
+  $data = htmlspecialchars($data);
+  return $data;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  // Get the submitted username and password
+  $username = isset($_POST['username']) ? $_POST['username'] : null;
+  $fullname = isset($_POST['fullname']) ? $_POST['fullname'] : null;
+  $password = isset($_POST['password']) ? $_POST['password'] : null;
+  $confirm_password = isset($_POST['confirm_password']) ? $_POST['confirm_password'] : null;
+  $email = isset($_POST['email']) ? $_POST['email'] : null;
+  $email = isset($_POST['email']) ? $_POST['email'] : null;
+
+  // Validate the username and password
+  $error = false;
+
+  if (empty($fullname)) {
+    $error = true;
+    $error_message = "Fullname is required";
+  }
+
+  if (empty($username)) {
+    $error = true;
+    $error_message = "Username is required";
+  } else {
+    $username = sanitize_input($username);
+    // Check if name contains only letters
+    if (!preg_match("/^[a-zA-Z]*$/", $username)) {
+      $error = true;
+      $error_message = "Only letters allowed. No white space allowed";
+    }
+
+    $query = $dbh->prepare("SELECT * FROM users WHERE username = :username LIMIT 1");
+    $query->execute(['username' => $username]);
+    $row = $query->rowCount();
+    if($row) {
+      $error = true;
+      $error_message = "Username already exists";
+    }
+  }
+
+  // Validate email
+  if (empty($email)) {
+    $error = true;
+    $error_message = "Email is required";
+  } else {
+    $email = sanitize_input($email);
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+      $error = true;
+      $error_message = "Invalid email format";
+    }
+    $query = $dbh->prepare("SELECT * FROM users WHERE email = :email LIMIT 1");
+    $query->execute(['email' => $email]);
+    $row = $query->rowCount();
+    if($row) {
+      $error = true;
+      $error_message = "Email already exists";
+    }
+  }
+
+  if (empty($password)) {
+    $error = true;
+    $error_message = "Password is required";
+  }
+
+  if (empty($confirm_password) || $password !== $confirm_password) {
+    $error = true;
+    $error_message = "Password and Confirm password must match.";
+  }
+
+  // If there are no validation errors
+  if (empty($error)) {
+    $password = password_hash($password, PASSWORD_DEFAULT);
+
+    $query = $dbh->prepare("INSERT INTO users (email, username, password, status) VALUES (:email, :username, :password, :status)");
+    $query->execute(['email' => $email, 'username' => $username, 'password' => $password, 'status' => 'active']);
+    $count = $query->rowCount();
+
+    if(!$count) {
+      $error = true;
+      $error_message = 'Signup failed. Try again later.';
+    }else {
+      $success_message = 'Signup successfull';
+      header('Location: login.php?signup=1');
+      exit;
+    }
+  }
+}
+
+?>
+
 <!DOCTYPE html>
 <!--[if lt IE 7]> <html class="ie6"> <![endif]-->
 <!--[if IE 7]>    <html class="ie7"> <![endif]-->
@@ -69,98 +189,7 @@
     <!-- Loader /- -->
 
     <!-- Header -->
-    <header class="header-main container-fluid no-padding">
-      <div class="menu-block">
-        <div class="menu-left-bg"></div>
-        <div class="container">
-          <!-- Navigation -->
-          <nav class="navbar ow-navigation">
-            <div class="col-md-3 no-padding">
-              <div class="navbar-header">
-                <button
-                  aria-controls="navbar"
-                  aria-expanded="false"
-                  data-target="#navbar"
-                  data-toggle="collapse"
-                  class="navbar-toggle collapsed"
-                  type="button"
-                >
-                  <span class="sr-only">Toggle navigation</span>
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-                </button>
-                <a title="Logo" href="index.html" class="navbar-brand"
-                  ><img
-                    src="images/logo.png"
-                    alt="logo"
-                    width="43"
-                    height="51"
-                  /><span>E-Vouchergift</span></a
-                >
-                <a href="index.html" class="mobile-logo" title="Logo"
-                  ><h3>E-Vouchergift</h3></a
-                >
-              </div>
-            </div>
-            <div class="col-md-9 menuinner no-padding">
-              <div class="navbar-collapse collapse" id="navbar">
-                <ul class="nav navbar-nav menubar">
-                  <li><a title="Home" href="index.html">Home</a></li>
-                  <li>
-                    <a title="Deals" href="index.html#deal-section">Deals</a>
-                  </li>
-                  <li>
-                    <a title="Shops" href="index.html#shopingbrands">Shops</a>
-                  </li>
-                  <li>
-                    <a title="Categories" href="coupon-categories.html"
-                      >Coupon Categories</a
-                    >
-                  </li>
-                  <li>
-                    <a title="Coupons" href="coupons.html"
-                      >Coupons</a
-                    >
-                  </li>
-                  <li class="dropdown">
-                    <a
-                      aria-expanded="false"
-                      aria-haspopup="true"
-                      role="button"
-                      class="dropdown-toggle"
-                      title="Latest News"
-                      href="blog.html"
-                      >Blogs</a
-                    >
-                    <i class="ddl-switch fa fa-angle-down"></i>
-                    <ul class="dropdown-menu">
-                      <li>
-                        <a title="Blog Single" href="blogpost.html"
-                          >Blog Single</a
-                        >
-                      </li>
-                    </ul>
-                  </li>
-                  <li>
-                    <a title="Contact Us" href="contact.html">Contact Us</a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </nav>
-          <!-- Navigation /- -->
-          <div class="user-cart">
-            <a href="./login.html" title="User"
-              ><i class="fa fa-user" aria-hidden="true"></i
-            ></a>
-            <a href="shopping-cart.html" title="Your Cart"
-              ><i class="fa fa-shopping-cart" aria-hidden="true"></i
-            ></a>
-          </div>
-        </div>
-      </div>
-    </header>
+    <?php include ('includes/header.php'); ?>
     <!-- Header /- -->
     <!-- PageBanner -->
     <div class="container-fluid pagebanner register no-padding">
@@ -169,7 +198,7 @@
           <div class="banner-content">
             <h3>Join with Us</h3>
             <ol class="breadcrumb">
-              <li><a href="index.html" title="Home">Home</a></li>
+              <li><a href="<?= BASE_URL; ?>/" title="Home">Home</a></li>
               <li class="active">Register</li>
             </ol>
           </div>
@@ -252,7 +281,7 @@
               <p>Today's hot deals handpicked by our Team up!</p>
             </div>
 
-            <form class="signupform">
+            <form class="signupform" action="<?= htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
               <div class="row">
                 <div class="col-md-12 col-sm-12 col-xs-6">
                   <div
@@ -267,12 +296,17 @@
                     <p style="margin-bottom: 0">
                       Do you already have an account?
                     </p>
-                    <a href="login.html" title="Login" style="top: 0"
+                    <a href="<?= BASE_URL; ?>/login.php" title="Login" style="top: 0"
                       >Sign in</a
                     >
                   </div>
                 </div>
                 <div class="col-md-12 col-sm-12 col-xs-6">
+                  <?php if(!empty($error_message)): ?>
+                    <div class="alert alert-danger">
+                      <?= $error_message; ?>
+                    </div>
+                  <?php endif; ?>
                   <div class="form-group">
                     <input
                       type="text"
@@ -280,6 +314,8 @@
                       class="form-control"
                       id="input_name"
                       placeholder="Your Full NAme*"
+                      name="fullname"
+                      value="<?= $fullname; ?>"
                     />
                   </div>
                 </div>
@@ -291,6 +327,8 @@
                       class="form-control"
                       id="input_email"
                       placeholder="Email Address*"
+                      name="email"
+                      value="<?= $email; ?>"
                     />
                   </div>
                 </div>
@@ -301,6 +339,8 @@
                       class="form-control"
                       id="input_unm"
                       placeholder="Select Your User Name"
+                      name="username"
+                      value="<?= $username; ?>"
                     />
                   </div>
                 </div>
@@ -311,6 +351,7 @@
                       class="form-control"
                       id="input_pwd"
                       placeholder="Password"
+                      name="password"
                     />
                   </div>
                 </div>
@@ -321,18 +362,20 @@
                       class="form-control"
                       id="input_cfmpwd"
                       placeholder="Confirm Password"
+                      name="confirm_password"
                     />
                   </div>
                 </div>
                 <div class="col-md-12 col-sm-12 col-xs-6">
-                  <div class="form-group">
+                  <button class="btn-success p-4 mt-4" type="submit">Signup</button>
+                  <!-- <div class="form-group">
                     <input
                       type="submit"
                       value="Sign Up!"
                       id="btn_submit"
                       title="SignUp"
                     />
-                  </div>
+                  </div> -->
                 </div>
               </div>
             </form>
